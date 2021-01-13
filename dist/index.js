@@ -1,40 +1,20 @@
 "use strict";
 
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+var WebWorker = require('./browser/worker.js');
 
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
-var _require = require("./image.js"),
-    image2Blob = _require.image2Blob,
-    createCanvas = _require.createCanvas,
-    createImage = _require.createImage;
-
-(function () {
-  var _createImage = createImage({
-    src: "./public/assets/2020-12-23-2620414866219008.jpg",
-    imageLoaded: function imageLoaded() {
-      var _createCanvas = createCanvas({
-        width: width / 2,
-        height: height / 2
-      }),
-          _createCanvas2 = _slicedToArray(_createCanvas, 2),
-          canvas = _createCanvas2[0],
-          context = _createCanvas2[1];
-
-      context.drawImage(image, 0, 0, width, height, 0, 0, width / 2, height / 2);
-      document.getElementsByTagName("body")[0].appendChild(canvas);
-      console.log(image, canvas);
-    }
-  }),
-      image = _createImage.image,
-      width = _createImage.width,
-      height = _createImage.height;
-})();
+var testWs = WebWorker(function (inject) {
+  inject(function (_ref) {
+    var on = _ref.on,
+        emit = _ref.emit;
+    on("fetch-get", function (url) {
+      var oReq = new XMLHttpRequest();
+      oReq.addEventListener("load", function (e) {});
+      oReq.open("GET", url);
+      oReq.send();
+    });
+  });
+});
+testWs.emit("fetch-get", "http://127.0.0.1:5500/get");
+testWs.on("log", function (val) {
+  console.log(val);
+});

@@ -1,6 +1,5 @@
 const gulp = require("gulp");
 const babel = require("gulp-babel");
-// const browserify = require("gulp-browserify")
 const browserify = require("browserify")
 const buffer = require('vinyl-buffer')
 const stream = require('vinyl-source-stream')
@@ -14,7 +13,7 @@ const {
 } = gulp
 
 function babel_tranfrom_task() {
-    return src("src/*.js")
+    return src("src/**/*.js")
         .pipe(babel({
             presets: [
                 [
@@ -26,9 +25,6 @@ function babel_tranfrom_task() {
                 ]
             ]
         }))
-        // .pipe(browserify({
-        //     insertGlobals: true,
-        // }))
         .pipe(dest("dist"))
 }
 
@@ -52,7 +48,7 @@ function build_task(done) {
 }
 
 function watch_task(done) {
-    watch("src/*.js", build_task)
+    watch("src/**/*.js", build_task)
     done()
 }
 

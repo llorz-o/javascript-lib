@@ -1,31 +1,22 @@
-const {
-    image2Blob,
-    createCanvas,
-    createImage
-} = require("./image.js");
+const WebWorker = require('./browser/worker.js')
 
-(() => {
-    const {
-        image,
-        width,
-        height
-    } = createImage({
-        src: "./public/assets/2020-12-23-2620414866219008.jpg",
-        imageLoaded() {
-            const [canvas, context] = createCanvas({
-                width: width / 2,
-                height: height / 2
+const testWs = WebWorker(function (inject) {
+    inject(({
+        on,
+        emit,
+    }) => {
+        on("fetch-get", function (url) {
+            var oReq = new XMLHttpRequest();
+            oReq.addEventListener("load", function (e) {
+
             });
+            oReq.open("GET", url);
+            oReq.send();
+        })
+    })
+})
 
-            context.drawImage(image, 0, 0, width, height, 0, 0, width/2, height/2);
-
-            document.getElementsByTagName("body")[0].appendChild(canvas)
-
-            console.log(image, canvas);
-        }
-    });
-
-
-
-
-})()
+testWs.emit("fetch-get", "http://127.0.0.1:5500/get")
+testWs.on("log", function (val) {
+    console.log(val);
+})
