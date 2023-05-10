@@ -6,12 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <!-- <script src="./public/require-2.3.6.min.js"></script> -->
+    <script src="./dist/browser/sentry.js" data-api="http://localhost" data-zip="true"></script>
+    <script src="./public/js/jquery.3.5.1.min.js"></script>
+    <script src="./public/js/jquery.form.min.js"></script>
 </head>
 
 <body>
 
-    <!-- <img src="./public/assets/2020-12-23-2620414866219008.jpg" id="image" alt=""> -->
-
+    <img src="./public/assets/2020-12-23-2620414866219000.jpg" id="image" alt="">
+    <form id="form" action="https://httpbin.org/post" method="post">
+        <div>
+            <input type="file" name="file" id="upload">
+        </div>
+        <input type="submit">
+    </form>
     <script src="./dist/bundle/index.js"></script>
 </body>
 

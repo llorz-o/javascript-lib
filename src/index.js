@@ -1,22 +1,33 @@
-const WebWorker = require('./browser/worker.js')
+const upload = document.getElementById('upload')
 
-const testWs = WebWorker(function (inject) {
-    inject(({
-        on,
-        emit,
-    }) => {
-        on("fetch-get", function (url) {
-            var oReq = new XMLHttpRequest();
-            oReq.addEventListener("load", function (e) {
+// upload.onchange = function () {
+//     const reader = new FileReader();
+//     reader.onload = function() {
+//         console.log(this.result);
+//     }
+//     // reader.readAsText(this.files[0])
+//     reader.readAsDataURL(this.files[0])
+//     // reader.readAsArrayBuffer(this.files[0])
+//     // reader.readAsBinaryString(this.files[0])
+// }
 
-            });
-            oReq.open("GET", url);
-            oReq.send();
-        })
-    })
-})
+// $(function () {
+//     const ok = navigator.sendBeacon('https://httpbin.org/post', new FormData().append('json', JSON.stringify({
+//         a: '1'
+//     })));
+//     console.log(ok);
+//     $('#form').ajaxForm(function () {
+//         alert('done')
+//     });
+// })
 
-testWs.emit("fetch-get", "http://127.0.0.1:5500/get")
-testWs.on("log", function (val) {
-    console.log(val);
-})
+new Image().src = 'http://www.google.com/api/ss.png'
+
+const xhr = new XMLHttpRequest();
+xhr.open('GET', 'https://httpbin/get', true)
+xhr.send()
+
+// for (let index = 0; index < 100; index++) {
+//     console.log(index,'oo ni ge xx');    
+// }
+JSON.parse(undefined)

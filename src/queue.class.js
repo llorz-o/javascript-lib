@@ -1,6 +1,6 @@
 module.exports = class Queue {
     constructor() {
-        const arr = [];
+        let arr = [];
         //入队操作
         this.push = element => {
             arr.push(element);
@@ -8,16 +8,16 @@ module.exports = class Queue {
         }
         //出队操作
         this.pop = () => {
-            return this.arr.shift()
+            return arr.shift()
         }
         //获取队首
         this.getFront = () => {
-            return this.arr[0];
+            return arr[0];
         }
 
         //获取队尾
         this.getRear = () => {
-            return this.arr[this.arr.length - 1]
+            return arr[arr.length - 1]
         }
 
         //清空队列
