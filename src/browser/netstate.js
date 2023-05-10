@@ -1,5 +1,5 @@
  const Ua = require("./userAgent.js")
-
+ 
  function getNetState() {
      let {
          downlink, // 下行速度

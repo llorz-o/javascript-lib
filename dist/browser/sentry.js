@@ -21,10 +21,12 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 (function () {
-  var zip = true;
+  var dataset = window.document.currentScript.dataset;
+  var zip = dataset.zip;
+  var api = dataset.api;
   var oldError = console.error;
   var oldLog = console.log;
-  var alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Z"];
+  var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXZ".split("");
   var numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   var GET_TYPE = /^(?:\[object )([A-z]+)(?:])$/;
   var json = '{"type":"a","consoleType":"b","errorType":"c","to":"d","fullPath":"e","name":"f","meta":"g","noAuth":"h","from":"i","stack":"j","message":"k","info":"l","sourceTagName":"m","sourceId":"n","sourceClassName":"o","isRoot":"p","args":"q","fetchURL":"r","fetchStatus":"s","fetchStatusText":"t"}';
@@ -91,7 +93,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
   function fixedEncodeURIComponent(str) {
     return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
-      return '%' + c.charCodeAt(0).toString(16).toUpperCase();
+      return "%" + c.charCodeAt(0).toString(16).toUpperCase();
     });
   }
 
@@ -103,6 +105,14 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
    * 整个用户操作捕获以及上报有一个队列，记录用户操作
    * 控制台输出，touch事件，鼠标点击，键盘keydown事件
    * 路由跳转，所有请求的捕获，错误抛出
+   *
+   * <script src="" data-api="" data-zip="true"></script>
+   * 
+   * CatchError.onRouterError(router)
+   * CatchError.onVueError(Vue)
+   * CatchError.emitBusinessError(error,msg)
+   * CatchError.emitInitalError(error,msg)
+   * CatchError.emitFetchError(error,msg)
    */
 
   var CatchError = /*#__PURE__*/function () {
@@ -122,7 +132,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
             queue = [];
             oldLog("已上报：", slice15);
             var jsonStr = JSON.stringify(slice15);
-            CatchError.reportMethod('https://upload.wikimedia.org/wikipedia/commons/e/e6/1kb.png', {
+            CatchError.reportMethod(api, {
               uu: CatchError.uuid,
               su: CatchError.sessionUUID,
               fu: CatchError.flushUUID,
@@ -148,7 +158,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
             var xhr = new XMLHttpRequest();
             var form = new FormData();
             form.append("d", JSON.stringify(data));
-            xhr.open("POST", url, true);
+            xhr.open("POST", url + "/ajax", true);
 
             xhr.onreadystatechange = function () {
               if (xhr.readyState === 4) {
@@ -164,16 +174,16 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
         };
 
         var imagePost = function imagePost() {
-          var queryStr = "?d=".concat(fixedEncodeURIComponent(JSON.stringify(data)));
+          var queryStr = "/tiny.png?d=".concat(fixedEncodeURIComponent(JSON.stringify(data)));
           var img = new Image();
 
           img.onload = function (e) {
-            oldLog('imagePost onload', e);
+            oldLog("imagePost onload", e);
             done(true);
           };
 
           img.onerror = function (e) {
-            oldLog('imagePost onerror', e);
+            oldLog("imagePost onerror", e);
             xhrPost();
           };
 
@@ -184,7 +194,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
         if (navigator.sendBeacon) {
           var form = new FormData();
           form.append("d", JSON.stringify(data));
-          var ok = navigator.sendBeacon(url, form);
+          var ok = navigator.sendBeacon(url + "/beacon", form);
           oldLog("send beacon status:".concat(ok));
           ok ? done(true) : imagePost();
         } else {
@@ -232,13 +242,11 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
             errorType: "",
             to: {
               fullPath: to.fullPath,
-              name: to.name,
-              meta: to.meta
+              name: to.name
             },
             from: {
               fullPath: from.fullPath,
-              name: from.name,
-              meta: from.meta
+              name: from.name
             }
           });
           next();
@@ -336,7 +344,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
         });
 
         var handleArgs = function handleArgs(args) {
-          return args.map(function (item) {
+          var _args = args.map(function (item) {
             try {
               if (item) return JSON.stringify(item);else return item;
             } catch (error) {
@@ -347,6 +355,8 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
               };
             }
           });
+
+          return JSON.stringify(_args);
         };
 
         console.error = function () {
@@ -408,7 +418,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
       key: "handleEmitError",
       value: function handleEmitError(error, errorType) {
         if (error instanceof Error) {
-          var request = error.request || (errorType === 'fetch' ? {
+          var request = error.request || (errorType === "fetch" ? {
             statusText: "浏览器错误, 请求未发出！！"
           } : {});
           var data = {
@@ -615,7 +625,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
     ks.forEach(function (v, index) {
       mapping[v] = alphabet[index];
     });
-    return JSON.stringify(mapping);
+    return mapping;
   };
 
   CatchError.init(); // for (let index = 0; index < 100; index++) {

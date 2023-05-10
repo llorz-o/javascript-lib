@@ -21,7 +21,7 @@ const upload = document.getElementById('upload')
 //     });
 // })
 
-new Image().src = 'http://www.google.com/api/ss.png'
+new Image().src = 'http://www.google.com/api/ss1.png'
 
 const xhr = new XMLHttpRequest();
 xhr.open('GET', 'https://httpbin/get', true)
