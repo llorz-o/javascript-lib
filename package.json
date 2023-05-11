@@ -1,0 +1,35 @@
+{
+    "name": "javascript-lib",
+    "version": "1.0.0",
+    "description": "javascript 的常用工具,库",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/llorz-o/javascript-lib.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/llorz-o/javascript-lib/issues"
+    },
+    "homepage": "https://github.com/llorz-o/javascript-lib#readme",
+    "devDependencies": {
+        "@babel/core": "^7.12.10",
+        "@babel/preset-env": "^7.12.11",
+        "browserify": "^17.0.0",
+        "gulp": "^4.0.2",
+        "gulp-babel": "^8.0.0",
+        "vinyl-buffer": "^1.0.1",
+        "vinyl-source-stream": "^2.0.0"
+    },
+    "dependencies": {
+        "axios": "^1.4.0",
+        "node-sass": "^8.0.0",
+        "sass": "^1.62.1",
+        "sass-loader": "^13.2.2",
+        "scss": "^0.2.4"
+    }
+}

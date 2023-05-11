@@ -19,7 +19,7 @@ function getNetState() {
   } // 无法通过 navigator.connection 获取网络状态 ios 不支持, chrome 有怪异行为(在无网络的wifi下将导致错误的 rtt 评估)
 
 
-  if (versions.ios || versions.webkit && type === 'wifi') {
+  if (versions.ios || versions.webkit && type === "wifi") {
     // 这里的 rtt不是真实的rtt 而是api请求与返回时间差的平均值
     var _rtt = assessmentNetstate();
 
@@ -27,17 +27,17 @@ function getNetState() {
     onLine = true;
 
     if (_rtt > 3000) {
-      effectiveType = 'slow-2g';
+      effectiveType = "slow-2g";
     } else {
-      effectiveType = '2g';
+      effectiveType = "2g";
     }
 
     if (_rtt < 1000) {
-      effectiveType = '3g';
+      effectiveType = "3g";
     }
 
     if (_rtt < 300) {
-      effectiveType = '4g';
+      effectiveType = "4g";
     }
   }
 
