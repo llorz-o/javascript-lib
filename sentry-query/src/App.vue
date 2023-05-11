@@ -22,24 +22,44 @@
           <vxe-input v-model="query.FlushUUID" type="text" placeholder="请输入FlushUUID" clearable></vxe-input>
         </template>
       </vxe-form-item>
+      <vxe-form-item field="LogType">
+        <template #default>
+          <vxe-select v-model="query.LogType" placeholder="日志类型" clearable>
+            <vxe-option v-for="num in ['error', 'console', 'router', 'device']" :key="num" :value="num"
+              :label="`LogType：${num}`"></vxe-option>
+          </vxe-select>
+        </template>
+      </vxe-form-item>
       <vxe-form-item>
         <template #default>
           <vxe-button type="submit" status="primary" content="查询"></vxe-button>
           <vxe-button type="reset" content="重置"></vxe-button>
+          <vxe-button icon="vxe-icon-question-circle-fill" @click="emulateConsole">模拟控制台日志输出</vxe-button>
         </template>
       </vxe-form-item>
     </vxe-form>
 
-    <vxe-button icon="vxe-icon-question-circle-fill" @click="emulateConsole">模拟控制台日志输出</vxe-button>
-
-
-    <vxe-table border :data="list" stripe>
+    <vxe-table border :data="list" :row-config="{ height: 30 }" size="mini" stripe max-height="600px">
       <vxe-column type="seq" width="60"></vxe-column>
-      <vxe-column field="UUID" title="UUID" width="100"></vxe-column>
-      <!-- <vxe-column field="Ip" title="Ip" width="110"></vxe-column> -->
-      <vxe-column field="SessionUUID" title="SessionUUID" width="110"></vxe-column>
-      <vxe-column field="FlushUUID" title="FlushUUID" width="100"></vxe-column>
-      <vxe-column title="TimeStamp" width="140">
+      <vxe-column field="UUID" title="UUID" width="100">
+        <template #default="{ row }">
+          <vxe-button type="text" status="primary" :content="row.UUID"
+            @click="(query.UUID = row.UUID) && getList()"></vxe-button>
+        </template>
+      </vxe-column>
+      <vxe-column field="SessionUUID" title="SessionUUID" width="110">
+        <template #default="{ row }">
+          <vxe-button type="text" status="primary" :content="row.SessionUUID"
+            @click="(query.SessionUUID = row.SessionUUID) && getList()"></vxe-button>
+        </template>
+      </vxe-column>
+      <vxe-column field="FlushUUID" title="FlushUUID" width="100">
+        <template #default="{ row }">
+          <vxe-button type="text" status="primary" :content="row.FlushUUID"
+            @click="(query.FlushUUID = row.FlushUUID) && getList()"></vxe-button>
+        </template>
+      </vxe-column>
+      <vxe-column title="TimeStamp" width="150">
         <template #default="{ row }">
           <span> {{ new Date(row.TimeStamp).toLocaleString() }}</span>
         </template>
@@ -48,8 +68,13 @@
       <vxe-column title="LogType" width="90">
         <template #default="{ row }">
           <vxe-button v-if="row.Log.type === 'error'" type="text" status="danger" :content="row.Log.type"></vxe-button>
-          <vxe-button v-if="row.Log.type === 'console'" type="text" status="info" :content="row.Log.type"></vxe-button>
-          <vxe-button v-if="row.Log.type === 'router'" type="text" status="warning" :content="row.Log.type"></vxe-button>
+          <vxe-button v-else-if="row.Log.type === 'console'" type="text" status="info"
+            :content="row.Log.type"></vxe-button>
+          <vxe-button v-else-if="row.Log.type === 'router'" type="text" status="warning"
+            :content="row.Log.type"></vxe-button>
+          <vxe-button v-else-if="row.Log.type === 'device'" type="text" status="primary"
+            :content="row.Log.type"></vxe-button>
+          <vxe-button v-else type="text" :content="row.Log.type"></vxe-button>
         </template>
       </vxe-column>
       <vxe-column title="Type" width="90">
@@ -61,7 +86,7 @@
       <vxe-column field="Log.message" title="LogMessage" show-overflow></vxe-column>
       <vxe-column title="Operation" width="150">
         <template #default="{ row }">
-          <vxe-button content="拖动窗口调整大小" @click="showDetail(row)">详情</vxe-button>
+          <vxe-button size="mini" content="拖动窗口调整大小" @click="showDetail(row)">详情</vxe-button>
         </template>
       </vxe-column>
     </vxe-table>
@@ -70,7 +95,8 @@
       @page-change="onPageChange">
     </vxe-pager>
 
-    <vxe-modal v-model="visibleDetailModel" width="600" :position="{ top: 200, left: 200 }" mask-closable esc-closable>
+    <vxe-modal v-model="visibleDetailModel" title="错误详情" width="800" :position="{ top: 100, left: 700 }" mask-closable
+      esc-closable>
       <template #default>
         <div class="detailModel">
           <div class="item" v-for="item in level1" :key="item[0]">
@@ -80,34 +106,86 @@
           <div class="log">
             <div class="item" v-for="(v, k) in modelData.Log" :key="k">
               <div class="label">{{ k }}:</div>
-              <div class="value">{{ v }}</div>
+              <div class="value">
+                <template v-if="k === 'deviceInfo'">
+                  {{ JSON.parse(v) }}
+                </template>
+                <template v-else>
+                  {{ v }}
+                </template>
+              </div>
             </div>
           </div>
         </div>
       </template>
     </vxe-modal>
 
-    <vxe-modal v-model="visibleEmulatorModel" width="1000" :position="{ top: 100, left: 100 }" mask-closable esc-closable>
+    <vxe-modal v-model="visibleEmulatorModel" title="日志输出" width="1300" :position="{ top: 50, left: 50 }" mask-closable
+      esc-closable>
       <template #default>
-        <div class="emulateConsole">
-          <template v-for="item in list" :key="item._id">
+        <div class="emulateConsole" v-if="visibleEmulatorModel">
+          <template v-for="(item, index) in list" :key="item._id">
             <div v-if="item.Log.type === 'error'" class="item error">
               <template v-if="item.Log.errorType === 'source'">
                 <div class="message">
-                  {{ item.Log.sourceSrc }}
+                  GET {{ item.Log.sourceSrc }}
+                  <span class="tagname">
+                    {{ item.Log.sourceTagName }}
+                  </span>
+                  <span class="id" v-if="item.Log.sourceId">
+                    #{{ item.Log.sourceId }}
+                  </span>
+                  <span class="class" v-if="item.Log.sourceClassName">
+                    .{{ item.Log.sourceClassName }}
+                  </span>
                 </div>
               </template>
               <template v-else>
                 <div class="message">
                   {{ item.Log.message }}
+                  <template>
+                    <span class="filename" v-if="item.Log.filename">
+                      {{ item.Log.filename }}
+                    </span>
+                  </template>
+                  <template>
+                    <span class="lineno" v-if="item.Log.lineno">
+                      :{{ item.Log.lineno }}
+                    </span>
+                  </template>
+                  <template>
+                    <span class="colno" v-if="item.Log.colno">
+                      :{{ item.Log.colno }}
+                    </span>
+                  </template>
                 </div>
                 <div class="stack" v-html="item.Log.stack">
                 </div>
               </template>
             </div>
-            <div v-else-if="item.Log.type === 'console'" class="item log">
+            <div v-else-if="item.Log.type === 'console'" class="item console">
               <div class="args">
-                {{ item.Log.args }}
+                <template v-for="(span, index) in parseLogArgs(item.Log.args)" :key="index">
+                  <span class="string" v-if="checkType(span) === 'string'">
+                    {{ span }}
+                  </span>
+                  <span class="boolean" v-if="checkType(span) === 'boolean'">
+                    {{ span }}
+                  </span>
+                  <span class="number" v-if="checkType(span) === 'number'">
+                    {{ span }}
+                  </span>
+                  <span class="null" v-if="checkType(span) === 'null'">
+                    {{ span }}
+                  </span>
+                  <span class="object" v-if="checkType(span) === 'object'">
+                    Object &nbsp;
+                    <ObjectLog :data="span" />
+                  </span>
+                  <span class="array" v-if="checkType(span) === 'array'">
+                    {{ span }}
+                  </span>
+                </template>
               </div>
             </div>
             <div v-else-if="item.Log.type === 'router'" class="item router">
@@ -117,10 +195,17 @@
                 [&nbsp;{{ item.Log.to.fullPath }},&nbsp;{{ item.Log.to.name }}&nbsp;]
               </div>
             </div>
+            <div v-else-if="item.Log.type === 'device'" class="item device">
+              设备信息 &nbsp;
+              <ObjectLog :data="JSON.parse(item.Log.deviceInfo)" />
+            </div>
             <div v-else class="item log">
               <div class="args">
                 未知 {{ item.Log }}
               </div>
+            </div>
+            <div class="flush" v-if="(list[index + 1] || {}).FlushUUID !== item.FlushUUID">
+              用户刷新页面 {{ new Date(item.TimeStamp).toLocaleString() }}
             </div>
           </template>
         </div>
@@ -134,12 +219,14 @@
 import axios from 'axios';
 import { reactive, ref } from 'vue';
 import { VXETable } from 'vxe-table';
+import ObjectLog from './components/ObjectLog.vue'
 
 const query = reactive({
   Ip: "",
   UUID: "",
   FlushUUID: "",
-  SessionUUID: "594569w9",
+  SessionUUID: "",
+  LogType: "",
   page: 1,
   pageSize: 20,
 })
@@ -148,6 +235,7 @@ const resetQuery = () => {
   query.UUID = ""
   query.FlushUUID = ""
   query.SessionUUID = ""
+  query.LogType = ""
   query.page = 1
   query.pageSize = 20
   getList()
@@ -172,12 +260,22 @@ const getList = async () => {
     const _list = []
     total.value = response.data.total
     response.data.data.forEach(item => {
-      const ClientLogs = JSON.parse(item.ClientLogs)
+      const ClientLogs = item.ClientLogs.map(item => {
+        const result = { ...item, ...JSON.parse(item.details) }
+        Reflect.deleteProperty(result, 'details')
+        Reflect.deleteProperty(result, '_id')
+        return result
+      })
       ClientLogs.forEach(log => {
-        _list.push(Object.assign({}, item, { ClientLogs: undefined, Log: log }))
+        const result = Object.assign({}, item, { ClientLogs: undefined, Log: log })
+        Reflect.deleteProperty(result, 'ClientLogs')
+        _list.push(result)
       })
     })
-    list.value = _list
+    list.value = _list.filter(item => {
+      if (query.LogType) return item.Log.type === query.LogType
+      else return true
+    })
     console.log(_list);
   }
 }
@@ -196,21 +294,40 @@ const level1 = [
 ]
 const showDetail = row => {
   visibleDetailModel.value = true
-  console.log(row);
   modelData.value = row
 }
 
-const visibleEmulatorModel = ref(true)
+const visibleEmulatorModel = ref(false)
 const emulateConsole = () => {
   if (!(query.UUID || query.SessionUUID || query.FlushUUID || query.Ip)) {
     return VXETable.modal.message({
-      content: '请输入任一搜索项', status: 'error'
+      content: '请输入UUID,SessionUUID,FlushUUID,Ip 任一搜索项', status: 'error'
     })
   }
 
   visibleEmulatorModel.value = true
 }
 
+
+const parseLogArgs = (args) => {
+  if (args) {
+    try {
+      return JSON.parse(args).map(data => {
+        try {
+          return JSON.parse(data)
+        } catch (error) {
+          return data
+        }
+      })
+    } catch (error) {
+      console.error("parse item.Log.args", error);
+      return []
+    }
+  }
+  return []
+}
+
+const checkType = (v) => typeof (v)
 </script>
 
 <style lang="scss">
@@ -251,14 +368,26 @@ const emulateConsole = () => {
 }
 
 .emulateConsole {
-  width: 1000px;
-  padding-left: 20px;
+  width: 1250px;
+  padding: 0 10px;
   background-color: #202124;
   color: #ddd;
   overflow-y: auto;
+  max-height: 600px;
+
+  .flush {
+    text-align: center;
+    background-color: #3e8bff;
+    font-weight: 700;
+    font-size: 18px;
+  }
 
   .item {
-    padding: 2px 0;
+    padding: 2px 10px;
+
+    &.device {
+      display: flex;
+    }
 
     &.error {
       border-top: 1px solid #5c0000;
@@ -266,7 +395,31 @@ const emulateConsole = () => {
       background-color: #290000;
 
       .message {
+        display: flex;
         color: #d63500;
+
+        .filename {
+          margin-left: auto;
+          color: #3e8bff;
+        }
+
+        .lineno,
+        .colno {
+          color: #7099c2;
+        }
+
+        .tagname {
+          color: #3e8bff;
+          margin-left: auto;
+        }
+
+        .id {
+          color: #ff5f68;
+        }
+
+        .class {
+          color: #dae904;
+        }
       }
 
       .stack {
@@ -275,7 +428,20 @@ const emulateConsole = () => {
       }
     }
 
-    &.log {}
+    &.console {
+      .args {
+        display: flex;
+
+        span {
+          margin-right: 5px;
+
+          &.object {
+            color: #3e8bff;
+            display: flex;
+          }
+        }
+      }
+    }
 
     &.router {
       display: flex;
