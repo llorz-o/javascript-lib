@@ -675,8 +675,18 @@ const DeviceInfo = (function () {
    * CatchError.emitInitalError(error,msg)
    * CatchError.emitFetchError(error,msg)
    */
+  let isFirstTimeVisit = false;
+  let extraData = {};
   class CatchError {
-    static isFirstTimeVisit = false;
+    static setExtraData = (k, v) => {
+      if (!isString(k) || !isString(v)) {
+        oldLog("oldLog| key and value must be String");
+        return false;
+      }
+      extraData[k] = v;
+    };
+
+    static clearExtraData = () => (extraData = {});
 
     static report(isInstant) {
       const len = queue.length;
@@ -687,6 +697,14 @@ const DeviceInfo = (function () {
           queue = [];
           oldLog("oldLog|已上报：", slice15);
           const jsonStr = JSON.stringify(slice15);
+          oldLog("oldLog|",{
+            uu: CatchError.uuid,
+            su: CatchError.sessionUUID,
+            fu: CatchError.flushUUID,
+            t: Date.now(),
+            e: JSON.stringify(extraData),
+            c: jsonStr,
+          })
           CatchError.reportMethod(
             api,
             {
@@ -694,6 +712,7 @@ const DeviceInfo = (function () {
               su: CatchError.sessionUUID,
               fu: CatchError.flushUUID,
               t: Date.now(),
+              e: JSON.stringify(extraData),
               c: jsonStr,
             },
             () => {}
@@ -738,21 +757,22 @@ const DeviceInfo = (function () {
         };
         img.onerror = (e) => {
           oldLog("oldLog|imagePost onerror", e);
-          xhrPost();
+
+          if (navigator.sendBeacon) {
+            const form = new FormData();
+            form.append("d", JSON.stringify(data));
+            const ok = navigator.sendBeacon(url + "/beacon", form);
+            oldLog(`oldLog|send beacon status:${ok}`);
+            ok ? done(true) : imagePost();
+          } else {
+            xhrPost();
+          }
         };
         img.src = url + queryStr;
         return;
       };
 
-      if (navigator.sendBeacon) {
-        const form = new FormData();
-        form.append("d", JSON.stringify(data));
-        const ok = navigator.sendBeacon(url + "/beacon", form);
-        oldLog(`oldLog|send beacon status:${ok}`);
-        ok ? done(true) : imagePost();
-      } else {
-        imagePost();
-      }
+      imagePost();
     }
 
     static pushIn(data) {
@@ -842,7 +862,7 @@ const DeviceInfo = (function () {
      * 初始化错误捕获
      */
     static init() {
-      if (CatchError.isFirstTimeVisit) {
+      if (isFirstTimeVisit) {
         CatchError.pushIn({
           type: "device",
           deviceInfo: JSON.stringify(
@@ -1135,7 +1155,7 @@ const DeviceInfo = (function () {
   CatchError.uuid =
     window.localStorage.getItem("ERR_UUID") ||
     (() => {
-      CatchError.isFirstTimeVisit = true;
+      isFirstTimeVisit = true;
       const uuid = getUUID();
       window.localStorage.setItem("ERR_UUID", uuid);
       return uuid;

@@ -11,6 +11,7 @@ const pages = async (req, res) => {
     SessionUUID,
     FlushUUID,
     LogType,
+    ExtraData,
   } = query || {};
   let docs = db.LogModel.where();
 
@@ -19,6 +20,8 @@ const pages = async (req, res) => {
   if (SessionUUID) docs = docs.where("SessionUUID").equals(SessionUUID);
   if (FlushUUID) docs = docs.where("FlushUUID").equals(FlushUUID);
   if (LogType) docs = docs.where("ClientLogs.type").equals(LogType);
+  if (ExtraData)
+    docs = docs.where("Extra").regex(ExtraData);
 
   const count = await docs.clone().countDocuments().exec();
 

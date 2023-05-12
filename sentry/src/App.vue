@@ -22,6 +22,11 @@
           <vxe-input v-model="query.FlushUUID" type="text" placeholder="请输入FlushUUID" clearable></vxe-input>
         </template>
       </vxe-form-item>
+      <vxe-form-item field="ExtraData">
+        <template #default>
+          <vxe-input v-model="query.ExtraData" type="text" placeholder="请输入Extra模糊搜索" clearable></vxe-input>
+        </template>
+      </vxe-form-item>
       <vxe-form-item field="LogType">
         <template #default>
           <vxe-select v-model="query.LogType" placeholder="日志类型" clearable>
@@ -41,6 +46,12 @@
 
     <vxe-table border :data="list" :row-config="{ height: 30 }" size="mini" stripe max-height="600px">
       <vxe-column type="seq" width="60"></vxe-column>
+      <vxe-column field="Ip" title="Ip" width="100">
+        <template #default="{ row }">
+          <vxe-button type="text" status="primary" :content="row.Ip"
+            @click="(query.Ip = row.Ip) && getList()"></vxe-button>
+        </template>
+      </vxe-column>
       <vxe-column field="UUID" title="UUID" width="100">
         <template #default="{ row }">
           <vxe-button type="text" status="primary" :content="row.UUID"
@@ -67,14 +78,16 @@
       <!-- <vxe-column field="Date" title="Date"></vxe-column> -->
       <vxe-column title="LogType" width="90">
         <template #default="{ row }">
-          <vxe-button v-if="row.Log.type === 'error'" type="text" status="danger" :content="row.Log.type"></vxe-button>
-          <vxe-button v-else-if="row.Log.type === 'console'" type="text" status="info"
+          <vxe-button @click="(query.LogType = row.Log.type) && getList()" v-if="row.Log.type === 'error'" type="text"
+            status="danger" :content="row.Log.type"></vxe-button>
+          <vxe-button @click="(query.LogType = row.Log.type) && getList()" v-else-if="row.Log.type === 'console'"
+            type="text" status="info" :content="row.Log.type"></vxe-button>
+          <vxe-button @click="(query.LogType = row.Log.type) && getList()" v-else-if="row.Log.type === 'router'"
+            type="text" status="warning" :content="row.Log.type"></vxe-button>
+          <vxe-button @click="(query.LogType = row.Log.type) && getList()" v-else-if="row.Log.type === 'device'"
+            type="text" status="primary" :content="row.Log.type"></vxe-button>
+          <vxe-button @click="(query.LogType = row.Log.type) && getList()" v-else type="text"
             :content="row.Log.type"></vxe-button>
-          <vxe-button v-else-if="row.Log.type === 'router'" type="text" status="warning"
-            :content="row.Log.type"></vxe-button>
-          <vxe-button v-else-if="row.Log.type === 'device'" type="text" status="primary"
-            :content="row.Log.type"></vxe-button>
-          <vxe-button v-else type="text" :content="row.Log.type"></vxe-button>
         </template>
       </vxe-column>
       <vxe-column title="Type" width="90">
@@ -84,7 +97,12 @@
       </vxe-column>
       <vxe-column field="Log.page" title="LogPage" show-overflow width="180"></vxe-column>
       <vxe-column field="Log.message" title="LogMessage" show-overflow></vxe-column>
-      <vxe-column title="Operation" width="150">
+      <vxe-column field="Extra" title="ExtraData" show-overflow>
+        <template #default="{ row }">
+          {{ row.Extra && JSON.parse(row.Extra) }}
+        </template>
+      </vxe-column>
+      <vxe-column title="Operation" width="90">
         <template #default="{ row }">
           <vxe-button size="mini" content="拖动窗口调整大小" @click="showDetail(row)">详情</vxe-button>
         </template>
@@ -227,6 +245,7 @@ const query = reactive({
   FlushUUID: "",
   SessionUUID: "",
   LogType: "",
+  ExtraData: "",
   page: 1,
   pageSize: 20,
 })
@@ -236,6 +255,7 @@ const resetQuery = () => {
   query.FlushUUID = ""
   query.SessionUUID = ""
   query.LogType = ""
+  query.ExtraData = ""
   query.page = 1
   query.pageSize = 20
   getList()
@@ -250,7 +270,7 @@ const onPageChange = ({ currentPage, pageSize }) => {
 const total = ref(0)
 const list = ref([])
 const getList = async () => {
-  const response = await axios.get('http://localhost/pages', {
+  const response = await axios.get(`${process.env.VUE_APP_API || 'http://localhost:54321/'}pages`, {
     params: {
       ...query
     }
@@ -291,6 +311,7 @@ const level1 = [
   ['UUID', "UUID"],
   ['SessionUUID', "SessionUUID"],
   ['FlushUUID', "FlushUUID"],
+  ['Extra', "ExtraData"],
 ]
 const showDetail = row => {
   visibleDetailModel.value = true
@@ -384,6 +405,8 @@ const checkType = (v) => typeof (v)
 
   .item {
     padding: 2px 10px;
+    border-top: 1px solid #3a3a3a;
+    // border-bottom: 1px solid #3a3a3a;
 
     &.device {
       display: flex;

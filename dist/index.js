@@ -1,6 +1,7 @@
 "use strict";
 
 var upload = document.getElementById("upload");
+CatchError.setExtraData("test", "ssss");
 new Image().src = "http://www.google.com/api/ss.png";
 
 function test() {

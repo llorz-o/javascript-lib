@@ -5838,6 +5838,11 @@ vue@^3.2.13:
     "@vue/server-renderer" "3.2.47"
     "@vue/shared" "3.2.47"
 
+vxe-table@^4.3.12:
+  version "4.3.12"
+  resolved "https://registry.yarnpkg.com/vxe-table/-/vxe-table-4.3.12.tgz#97d3f9936dd15ffd1628260d14e23ff110f0b584"
+  integrity sha512-JYSlJH1Ht2u2eHRTzHH5S9q+4I4ogiC/gx6VXEpUH2uZZkOECBOWGOOgDhBmL9CdxH6ip7zK1Y+sIZFd61ByRQ==
+
 watchpack@^2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/watchpack/-/watchpack-2.4.0.tgz#fa33032374962c78113f93c7f2fb4c54c9862a5d"
@@ -6066,6 +6071,11 @@ ws@^8.13.0:
   version "8.13.0"
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.13.0.tgz#9a9fb92f93cf41512a0735c8f4dd09b8a1211cd0"
   integrity sha512-x9vcZYTrFPC7aSIbj7sRCYo7L/Xb8Iy+pW0ng0wt2vCJv7M9HOMy0UoN3rr+IFC7hb7vXoqS+P9ktyLLLhO+LA==
+
+xe-utils@^3.5.7:
+  version "3.5.7"
+  resolved "https://registry.yarnpkg.com/xe-utils/-/xe-utils-3.5.7.tgz#2c885852dfadd5c8beeffdc1f884f8ceb962c669"
+  integrity sha512-3H+fDBKBR2wLJgyA7k9C/w1Xljx6Maml5ukV0WDY06HjYyGs2FEz6XhcwRCLIDXX4pBP3Gu0nX9DbCeuuRA2Ew==
 
 y18n@^5.0.5:
   version "5.0.8"

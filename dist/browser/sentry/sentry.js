@@ -709,6 +709,9 @@ var DeviceInfo = function () {
    * CatchError.emitFetchError(error,msg)
    */
 
+  var isFirstTimeVisit = false;
+  var extraData = {};
+
   var CatchError = /*#__PURE__*/function () {
     function CatchError() {
       _classCallCheck(this, CatchError);
@@ -726,11 +729,20 @@ var DeviceInfo = function () {
             queue = [];
             oldLog("oldLog|已上报：", slice15);
             var jsonStr = JSON.stringify(slice15);
+            oldLog("oldLog|", {
+              uu: CatchError.uuid,
+              su: CatchError.sessionUUID,
+              fu: CatchError.flushUUID,
+              t: Date.now(),
+              e: JSON.stringify(extraData),
+              c: jsonStr
+            });
             CatchError.reportMethod(api, {
               uu: CatchError.uuid,
               su: CatchError.sessionUUID,
               fu: CatchError.flushUUID,
               t: Date.now(),
+              e: JSON.stringify(extraData),
               c: jsonStr
             }, function () {});
           }, 250);
@@ -778,22 +790,23 @@ var DeviceInfo = function () {
 
           img.onerror = function (e) {
             oldLog("oldLog|imagePost onerror", e);
-            xhrPost();
+
+            if (navigator.sendBeacon) {
+              var form = new FormData();
+              form.append("d", JSON.stringify(data));
+              var ok = navigator.sendBeacon(url + "/beacon", form);
+              oldLog("oldLog|send beacon status:".concat(ok));
+              ok ? done(true) : imagePost();
+            } else {
+              xhrPost();
+            }
           };
 
           img.src = url + queryStr;
           return;
         };
 
-        if (navigator.sendBeacon) {
-          var form = new FormData();
-          form.append("d", JSON.stringify(data));
-          var ok = navigator.sendBeacon(url + "/beacon", form);
-          oldLog("oldLog|send beacon status:".concat(ok));
-          ok ? done(true) : imagePost();
-        } else {
-          imagePost();
-        }
+        imagePost();
       }
     }, {
       key: "pushIn",
@@ -888,7 +901,7 @@ var DeviceInfo = function () {
     }, {
       key: "init",
       value: function init() {
-        if (CatchError.isFirstTimeVisit) {
+        if (isFirstTimeVisit) {
           CatchError.pushIn({
             type: "device",
             deviceInfo: JSON.stringify(DeviceInfo.getDeviceInfo(window.location.href))
@@ -1191,7 +1204,18 @@ var DeviceInfo = function () {
     return CatchError;
   }();
 
-  _defineProperty(CatchError, "isFirstTimeVisit", false);
+  _defineProperty(CatchError, "setExtraData", function (k, v) {
+    if (!isString(k) || !isString(v)) {
+      oldLog("oldLog| key and value must be String");
+      return false;
+    }
+
+    extraData[k] = v;
+  });
+
+  _defineProperty(CatchError, "clearExtraData", function () {
+    return extraData = {};
+  });
 
   var getUUID = function getUUID() {
     var seed = Math.random() * Date.now();
@@ -1212,7 +1236,7 @@ var DeviceInfo = function () {
   };
 
   CatchError.uuid = window.localStorage.getItem("ERR_UUID") || function () {
-    CatchError.isFirstTimeVisit = true;
+    isFirstTimeVisit = true;
     var uuid = getUUID();
     window.localStorage.setItem("ERR_UUID", uuid);
     return uuid;

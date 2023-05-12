@@ -9,6 +9,7 @@ const post = (req, res) => {
   db.LogModel.create({
     Date: new Date().toLocaleString(),
     Ip: ip.split(":").pop(),
+    Extra: data.e,
     UUID: data.uu,
     SessionUUID: data.su,
     FlushUUID: data.fu,
@@ -25,6 +26,7 @@ const get = (req, res) => {
   db.LogModel.create({
     Date: new Date().toLocaleString(),
     Ip: ip.split(":").pop(),
+    Extra: data.e,
     UUID: data.uu,
     SessionUUID: data.su,
     FlushUUID: data.fu,

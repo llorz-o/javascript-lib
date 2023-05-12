@@ -14,6 +14,7 @@ const logSchema = mongoose.Schema({
   Ip: String,
   UUID: String,
   Date: String,
+  Extra: String,
   SessionUUID: String,
   FlushUUID: String,
   TimeStamp: Number,
