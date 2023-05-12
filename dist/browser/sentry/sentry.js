@@ -729,20 +729,12 @@ var DeviceInfo = function () {
             queue = [];
             oldLog("oldLog|已上报：", slice15);
             var jsonStr = JSON.stringify(slice15);
-            oldLog("oldLog|", {
-              uu: CatchError.uuid,
-              su: CatchError.sessionUUID,
-              fu: CatchError.flushUUID,
-              t: Date.now(),
-              e: JSON.stringify(Array.from(new Set(extraData))),
-              c: jsonStr
-            });
             CatchError.reportMethod(api, {
               uu: CatchError.uuid,
               su: CatchError.sessionUUID,
               fu: CatchError.flushUUID,
               t: Date.now(),
-              e: JSON.stringify(extraData),
+              e: JSON.stringify(Array.from(new Set(extraData))),
               c: jsonStr
             }, function () {});
           }, 250);
