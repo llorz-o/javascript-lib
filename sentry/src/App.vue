@@ -22,9 +22,9 @@
           <vxe-input v-model="query.FlushUUID" type="text" placeholder="请输入FlushUUID" clearable></vxe-input>
         </template>
       </vxe-form-item>
-      <vxe-form-item field="ExtraData">
+      <vxe-form-item field="Extra">
         <template #default>
-          <vxe-input v-model="query.ExtraData" type="text" placeholder="请输入Extra模糊搜索" clearable></vxe-input>
+          <vxe-input v-model="query.Extra" type="text" placeholder="请输入Extra模糊搜索" clearable></vxe-input>
         </template>
       </vxe-form-item>
       <vxe-form-item field="LogType">
@@ -99,7 +99,7 @@
       <vxe-column field="Log.message" title="LogMessage" show-overflow></vxe-column>
       <vxe-column field="Extra" title="ExtraData" show-overflow>
         <template #default="{ row }">
-          {{ row.Extra && JSON.parse(row.Extra) }}
+          <div v-if="row.Extra" v-html="decorateExtraData(JSON.stringify(row.Extra))"></div>
         </template>
       </vxe-column>
       <vxe-column title="Operation" width="90">
@@ -119,7 +119,15 @@
         <div class="detailModel">
           <div class="item" v-for="item in level1" :key="item[0]">
             <div class="label">{{ item[1] }}:</div>
-            <div class="value">{{ modelData[item[0]] }}</div>
+            <template v-if="item[1] === 'Extra'">
+              <div class="value">
+                <div class="item" v-for="(v, k) in modelData[item[0]]" :key="k">
+                  <div class="label" style="width: auto;">{{ k }}: &nbsp;</div>
+                  <div class="value"> {{ v }} &nbsp;,</div>
+                </div>
+              </div>
+            </template>
+            <div v-else class="value">{{ modelData[item[0]] }}</div>
           </div>
           <div class="log">
             <div class="item" v-for="(v, k) in modelData.Log" :key="k">
@@ -235,7 +243,7 @@
 
 <script setup>
 import axios from 'axios';
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { VXETable } from 'vxe-table';
 import ObjectLog from './components/ObjectLog.vue'
 
@@ -245,7 +253,7 @@ const query = reactive({
   FlushUUID: "",
   SessionUUID: "",
   LogType: "",
-  ExtraData: "",
+  Extra: "",
   page: 1,
   pageSize: 20,
 })
@@ -255,7 +263,7 @@ const resetQuery = () => {
   query.FlushUUID = ""
   query.SessionUUID = ""
   query.LogType = ""
-  query.ExtraData = ""
+  query.Extra = ""
   query.page = 1
   query.pageSize = 20
   getList()
@@ -280,6 +288,7 @@ const getList = async () => {
     const _list = []
     total.value = response.data.total
     response.data.data.forEach(item => {
+      const Extra = item.Extra ? JSON.parse(item.Extra) : item.Extra
       const ClientLogs = item.ClientLogs.map(item => {
         const result = { ...item, ...JSON.parse(item.details) }
         Reflect.deleteProperty(result, 'details')
@@ -287,7 +296,7 @@ const getList = async () => {
         return result
       })
       ClientLogs.forEach(log => {
-        const result = Object.assign({}, item, { ClientLogs: undefined, Log: log })
+        const result = Object.assign({}, item, { ClientLogs: undefined, Log: log, Extra })
         Reflect.deleteProperty(result, 'ClientLogs')
         _list.push(result)
       })
@@ -311,7 +320,7 @@ const level1 = [
   ['UUID', "UUID"],
   ['SessionUUID', "SessionUUID"],
   ['FlushUUID', "FlushUUID"],
-  ['Extra', "ExtraData"],
+  ['Extra', "Extra"],
 ]
 const showDetail = row => {
   visibleDetailModel.value = true
@@ -329,6 +338,19 @@ const emulateConsole = () => {
   visibleEmulatorModel.value = true
 }
 
+const extraReg = computed(() => {
+  if (query.Extra) return new RegExp(query.Extra, 'igm')
+  return false
+})
+const decorateExtraData = (data) => {
+  console.log(data, extraReg.value);
+  if (extraReg.value) {
+    return data.replace(extraReg.value, () => {
+      return `<span class="searched">${query.Extra}</span>`
+    })
+  }
+  return data
+}
 
 const parseLogArgs = (args) => {
   if (args) {
@@ -361,10 +383,21 @@ const checkType = (v) => typeof (v)
   margin-top: 60px;
 }
 
+.searched {
+  padding: 0 2px;
+  font-weight: 600;
+  color: #e02108;
+  font-size: 14px;
+}
+
 .detailModel {
+  >.item {
+    padding: 5px 0;
+  }
+
   .item {
     display: flex;
-    padding: 5px 0;
+
 
     .label {
       font-size: 15px;

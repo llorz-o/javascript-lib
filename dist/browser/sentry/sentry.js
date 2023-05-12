@@ -710,7 +710,7 @@ var DeviceInfo = function () {
    */
 
   var isFirstTimeVisit = false;
-  var extraData = {};
+  var extraData = [];
 
   var CatchError = /*#__PURE__*/function () {
     function CatchError() {
@@ -734,7 +734,7 @@ var DeviceInfo = function () {
               su: CatchError.sessionUUID,
               fu: CatchError.flushUUID,
               t: Date.now(),
-              e: JSON.stringify(extraData),
+              e: JSON.stringify(Array.from(new Set(extraData))),
               c: jsonStr
             });
             CatchError.reportMethod(api, {
@@ -1204,17 +1204,12 @@ var DeviceInfo = function () {
     return CatchError;
   }();
 
-  _defineProperty(CatchError, "setExtraData", function (k, v) {
-    if (!isString(k) || !isString(v)) {
-      oldLog("oldLog| key and value must be String");
-      return false;
-    }
-
-    extraData[k] = v;
+  _defineProperty(CatchError, "setExtraData", function (v) {
+    extraData.push(String(v));
   });
 
   _defineProperty(CatchError, "clearExtraData", function () {
-    return extraData = {};
+    return extraData = [];
   });
 
   var getUUID = function getUUID() {

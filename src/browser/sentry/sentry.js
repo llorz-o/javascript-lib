@@ -676,17 +676,14 @@ const DeviceInfo = (function () {
    * CatchError.emitFetchError(error,msg)
    */
   let isFirstTimeVisit = false;
-  let extraData = {};
+  let extraData = [];
   class CatchError {
-    static setExtraData = (k, v) => {
-      if (!isString(k) || !isString(v)) {
-        oldLog("oldLog| key and value must be String");
-        return false;
-      }
-      extraData[k] = v;
+
+    static setExtraData = (v) => {
+      extraData.push(String(v))
     };
 
-    static clearExtraData = () => (extraData = {});
+    static clearExtraData = () => (extraData = []);
 
     static report(isInstant) {
       const len = queue.length;
@@ -702,7 +699,7 @@ const DeviceInfo = (function () {
             su: CatchError.sessionUUID,
             fu: CatchError.flushUUID,
             t: Date.now(),
-            e: JSON.stringify(extraData),
+            e: JSON.stringify(Array.from(new Set(extraData))),
             c: jsonStr,
           })
           CatchError.reportMethod(
